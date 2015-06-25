@@ -1,4 +1,4 @@
-package com.poeny.keywords_filter;
+package com.poeny.keywords_filter.manager;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,11 +12,16 @@ import org.slf4j.LoggerFactory;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import com.mchange.v2.c3p0.DataSources;
 
+/**
+ * 管理SQL连接
+ * @author BAO
+ *
+ */
 public class ConnectionManager {
 
-	private static final String READ_CONFIG = "/readDB.properties";
-	
-	private static final String WRITE_CONFIG = "/writeDB.properties";
+	private static final String USER_CONFIG = "/subjectKeywordsDB.properties";
+
+	private static final String CRAWLER_CONFIG = "/crawlerKeywordsDB.properties";
 
 	private static final String DRIVER_PROP = "driver";
 
@@ -32,7 +37,7 @@ public class ConnectionManager {
 	private static ConnectionManager instance = null;
 
 	private ComboPooledDataSource readDataSource = null;
-	
+
 	private ComboPooledDataSource writeDataSource = null;
 
 	public static ConnectionManager getInstance() {
@@ -57,7 +62,8 @@ public class ConnectionManager {
 		return null;
 	}
 
-	private void testConnection(ComboPooledDataSource dataSource) throws SQLException {
+	private void testConnection(ComboPooledDataSource dataSource)
+			throws SQLException {
 		Connection conn = dataSource.getConnection();
 		conn.close();
 	}
@@ -65,7 +71,7 @@ public class ConnectionManager {
 	public boolean tryInit(ComboPooledDataSource dataSource, String conf) {
 		try {
 			Properties prop = loadConfig(conf);
-			LOGGER.info("初始化数据库配置");
+			LOGGER.info("初始化数据库配置: " + conf);
 			dataSource.setDriverClass(prop.getProperty(DRIVER_PROP));
 			dataSource.setJdbcUrl(prop.getProperty(URL_PROP));
 			dataSource.setUser(prop.getProperty(USERNAME_PROP));
@@ -86,30 +92,32 @@ public class ConnectionManager {
 		return false;
 	}
 
-	public boolean init(){
+	public boolean init() {
 		readDataSource = new ComboPooledDataSource();
 		writeDataSource = new ComboPooledDataSource();
-		return tryInit(readDataSource, READ_CONFIG) && tryInit(writeDataSource, WRITE_CONFIG);
-	}
-	
-	public Connection getReadConnection() {
-		try {
-			return readDataSource.getConnection();
-		} catch (SQLException e) {
-			LOGGER.error(e.getMessage() + "获取数据库连接失败！", e);
+		if(!tryInit(readDataSource, USER_CONFIG)) {
+			LOGGER.error("初始化远程用户定义关键字数据库连接失败");
+			return false;
+		}else{
+			LOGGER.info("初始化远程用户定义关键字数据库连接成功");
 		}
-		return null;
+		if(!tryInit(writeDataSource, CRAWLER_CONFIG)){
+			LOGGER.error("初始化远程爬虫关键字数据库连接失败");
+			return false;
+		}else{
+			LOGGER.info("初始化远程爬虫关键字数据库连接成功");
+		}
+		return true;
 	}
 
-	public Connection getWriteConnection() {
-		try {
-			return writeDataSource.getConnection();
-		} catch (SQLException e) {
-			LOGGER.error(e.getMessage() + "获取数据库连接失败！", e);
-		}
-		return null;
+	public Connection getSubjectDBConnection() throws SQLException {
+		return readDataSource.getConnection();
 	}
-	
+
+	public Connection getCrawlerDBConnection() throws SQLException {
+		return writeDataSource.getConnection();
+	}
+
 	protected void finalize() throws Throwable {
 		DataSources.destroy(readDataSource);
 		DataSources.destroy(writeDataSource);

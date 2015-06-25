@@ -1,4 +1,4 @@
-package com.poeny.keywords_filter;
+package com.poeny.keywords_filter.manager;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;

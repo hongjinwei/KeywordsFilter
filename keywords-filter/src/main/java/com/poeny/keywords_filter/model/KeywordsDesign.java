@@ -1,7 +1,12 @@
-package com.poeny.keywords_filter;
+package com.poeny.keywords_filter.model;
 
 import java.security.Timestamp;
 
+/**
+ * Keywords_design表的结构
+ * @author BAO
+ *
+ */
 public class KeywordsDesign {
 
 	private int id;

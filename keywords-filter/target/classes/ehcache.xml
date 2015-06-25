@@ -1,0 +1,22 @@
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="../config/ehcache.xsd">
+	<diskStore path="java.io.tmpdir" />
+	<cache name="subjectKeywords" maxElementsInMemory="10000" eternal="false"
+		timeToIdleSeconds="3600" timeToLiveSeconds="3600" maxElementsOnDisk="10000000"
+		diskExpiryThreadIntervalSeconds="120" memoryStoreEvictionPolicy="LRU">
+		<searchable>
+			<searchAttribute name="host" expression="value.getHost()" />
+			<searchAttribute name="doctype" expression="value.getDoctype()" />
+			<searchAttribute name="template" expression="value.getTemplate()" />
+		</searchable>
+	</cache>
+	<cache name="crawlerKeywords" maxElementsInMemory="10000" eternal="false"
+		timeToIdleSeconds="3600" timeToLiveSeconds="3600" maxElementsOnDisk="10000000"
+		diskExpiryThreadIntervalSeconds="120" memoryStoreEvictionPolicy="LRU">
+		<searchable>
+			<searchAttribute name="state" expression="value.getState()" />
+			<searchAttribute name="subjectId" expression="value.getSubjectId()" />
+			<searchAttribute name="choosedkeywordsSetList" expression="value.getChoosedKeywordSet()" />
+		</searchable>
+	</cache>
+</ehcache>
